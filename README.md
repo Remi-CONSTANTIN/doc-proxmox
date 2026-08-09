@@ -1,19 +1,19 @@
 # doc-proxmox
 
-Documentation et tutoriels autour de Proxmox :
+Documentation et tutoriels personnels autour de Proxmox :
 - PVE — Proxmox Virtual Environment
 - PBS — Proxmox Backup Server
 - PDM — Proxmox Datacenter Manager
 
-Ce dépôt regroupe des notes, guides pratiques, procédures et retours d’expérience pour aider à installer, configurer, administrer et dépanner un environnement Proxmox.
+Ce dépôt regroupe des notes, guides pratiques, procédures et retours d’expérience pour aider à installer, configurer, administrer et dépanner un environnement Proxmox
 
 ---
 
 ## Objectif du projet
 
-L’objectif de ce dépôt est de centraliser une documentation claire, structurée et facilement réutilisable sur l’écosystème Proxmox.
+L’objectif de ce dépôt est de centraliser une documentation claire, structurée et facilement réutilisable sur l’écosystème Proxmox
 
-Tu y trouveras par exemple :
+Vous y trouverez par exemple :
 
 - des guides d’installation
 - des tutoriels pas à pas
@@ -62,17 +62,6 @@ Ce dépôt s’adresse à toute personne qui souhaite :
 
 ---
 
-## Démarrer
-
-Pour parcourir la documentation :
-
-1. ouvre la section souhaitée
-2. lis les guides dans l’ordre recommandé
-3. applique les procédures selon ton besoin
-4. adapte les exemples à ton infrastructure
-
----
-
 ## Ce que tu peux y apprendre
 
 - déployer un environnement Proxmox proprement
@@ -92,29 +81,3 @@ Quelques principes suivis dans cette documentation :
 - distinguer lab, test et production
 - garder les sauvegardes testées et restaurables
 - noter les commandes utiles et les pièges fréquents
-
----
-
-## Contribution
-
-Les contributions sont les bienvenues, que ce soit pour :
-
-- corriger une erreur
-- améliorer un tutoriel
-- ajouter une procédure
-- proposer une nouvelle section
-- enrichir les exemples
-
-N’hésite pas à ouvrir une issue ou une pull request.
-
----
-
-## Licence
-
-À définir selon l’usage du projet.
-
----
-
-## Auteur
-
-Projet personnel de documentation sur l’univers Proxmox.
