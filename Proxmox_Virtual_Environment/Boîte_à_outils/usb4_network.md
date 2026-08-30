@@ -1,20 +1,20 @@
 # Introduction
-Lors de la mise en place d'un cluster Pve, il est généralement conseillé de séparer les flux gourmand en bande passante (migration VMs, réplication ZFS, CEPH etc...) des flux sensibles à la latence (ceux du cluster notamment).  
+Lors de la mise en place d'un cluster Pve, il est généralement conseillé de séparer les flux gourmands en bande passante (migration VMs, réplication ZFS, CEPH etc...) des flux sensibles à la latence.
 
 ## Objectif
-C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre deux nœuds Pve (bien qu'il existe plusieurs façons de faire en lien entre eux)
+C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre deux nœuds Pve (bien qu'il existe plusieurs façons de les relier)
 
 ## Avantage et inconvénient
 
 **Cool :**  
-- Débit théorique de l'USB4 est à 40Gps déplaçant le goulot d'étranglement au niveau du SSD (qui est très haut si vous en avez un du type NVME !)
+- Le débit théorique de l'USB4 est de 40 Gbps, déplaçant le goulot d'étranglement au niveau du SSD (qui est très haut si vous en avez un du type NVME !)
 
 **Pas cool :**  
-- Ne permet pas de relier les 3 nœuds car les plupart des mini-PC n'ont qu'un seul port USB4
+- Ne permet pas de relier les 3 nœuds car la plupart des mini-PC n'ont qu'un seul port USB4
 
 ## Comment savoir si vous pouvez le faire ?
-Il vous suffit de regarder si vos machines possèdent un port USB-C où il est écrit `USB4`.  
-Si vous ne savez pas, référez vous à la fiche technique.  
+Il vous suffit de vérifier si vos machines possèdent un port USB-C sur lequel est écrit `USB4`.  
+Si vous ne savez pas, référez-vous à la fiche technique.  
 
 </br>
 
@@ -25,7 +25,7 @@ Si vous ne savez pas, référez vous à la fiche technique.
 
 ## Configuration des liens
 
-1. Commencez par brancher le câble USB-C entre les deux nœuds. Pas besoin d'éteindre les nœuds, faites le à chaud
+1. Commencez par brancher le câble USB-C entre les deux nœuds. Pas besoin d'éteindre les nœuds, faites-le à chaud
 
 2. Connectez-vous à la console des nœuds et activez le module thunderbolt
 ```
@@ -36,21 +36,21 @@ puis faites en sorte qu'il soit chargé au démarrage du nœud
 echo "thunderbolt-net" > /etc/modules-load.d/thunderbolt-net.conf
 ```
 
-3. Vérifiez les logs du système afin de vérifier qu'il soit soit détecté
+3. Vérifiez les logs du système afin de vérifier qu'il soit détecté
 ```
 dmesg | grep -i -E "thunderbolt|usb4|net" | tail -n 20
 ```
 
-4. Puis vérifiez la liste des cartes réseaux dans la console
+4. Puis vérifiez la liste des cartes réseau dans la console
 ```
 ip link | grep thunderbolt
 ```
-puis dans l'interface graphique du Pve dans "Votre nœud" --> `System` --> `Network` 
+puis dans l'interface graphique du Pve dans "Votre nœud" --> `System` --> `Network`  
 <img width="2088" height="290" alt="thunderbolt_pve" src="https://github.com/user-attachments/assets/a6516a3c-0f76-45aa-8c17-c6ff785ec538" />
 
-On voit bien qu'une nouvelle interface physique `thunderbolt0` est apparue !
+On voit bien qu'une nouvelle interface physique `thunderbolt0` est apparue !  
 
-5. Une fois que vous avez fait les manipulations précédentes sur vos deux nœuds Pve, plus qu'à configurer les interfaces physiques avec une IP comme ceci :
+5. Une fois que vous avez effectué les manipulations précédentes sur vos deux nœuds Pve, plus qu'à configurer les interfaces physiques avec une IP comme ceci :
 
 **Mon premier Pve**  
 <img width="410" height="226" alt="thunderbolt_pve_ip_configuration_hephaistos" src="https://github.com/user-attachments/assets/497b2a46-8b47-4374-a226-40d394f20a90" />
@@ -67,9 +67,9 @@ Sans oublier d'appliquer la configuration à chaque modification !
 1. Aller dans `Datacenter` --> `Options` et modifiez le réseau dans l'option `Migration Settings`
 <img width="1702" height="523" alt="datacenter_migration_configuration" src="https://github.com/user-attachments/assets/c4e86e36-4aa2-4c14-b058-e16bdb2a936b" />
 
-2. Si vous avez activé le firewall proxmox alors ouvrez les flux entre vos deux nœuds pour ce nouveau réseau
+2. Si vous avez activé le firewall Proxmox, alors ouvrez les flux entre vos deux nœuds pour ce nouveau réseau
 
-Personnellement, je n'ai pas trop cherché à me compliquer la vie, j'ai ouvert tout les flux entrants entre les deux nœuds sur cette interface :  
+Personnellement, je n'ai pas cherché à me compliquer la vie, j'ai ouvert tous les flux entrants entre les deux nœuds sur cette interface :  
 <img width="410" height="237" alt="firewall_rule_usb_lan" src="https://github.com/user-attachments/assets/c6abfe13-85f1-4db8-bab4-5e0fd4d9473c" />  
 J'ai placé cette règle sur les deux nœuds Pve   
 
