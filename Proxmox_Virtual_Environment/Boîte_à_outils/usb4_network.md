@@ -1,12 +1,25 @@
 # Introduction
 Lors de la mise en place d'un cluster Pve, il est généralement conseillé de séparer les flux gourmand en bande passante (migration VMs, réplication ZFS, CEPH etc...) des flux sensibles à la latence (ceux du cluster notamment).  
 
-**C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre deux nœuds Pve (bien qu'il existe plusieurs façons de faire en lien entre eux)**
+## Objectif
+C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre deux nœuds Pve (bien qu'il existe plusieurs façons de faire en lien entre eux)
 
-- Le **problème** du câble USB est qu'il ne permet pas de relier les 3 nœuds car je ne possède qu'un seul port sur chacune de mes machines.  
-- Son principale **avantage** réside dans son débit théorique de 40Gps déplaçant le goulot d'étranglement au niveau du SSD (qui est très haut si vous en avez un du type NVME !)
+## Avantage et inconvénient
+
+**Cool :**  
+- Débit théorique de l'USB4 est à 40Gps déplaçant le goulot d'étranglement au niveau du SSD (qui est très haut si vous en avez un du type NVME !)
+
+**Pas cool :**  
+- Ne permet pas de relier les 3 nœuds car les plupart des mini-PC n'ont qu'un seul port USB4
+
+## Comment savoir si vous pouvez le faire ?
+Il vous suffit de regarder si vos machines possèdent un port USB-C où il est écrit `USB4`.  
+Si vous ne savez pas, référez vous à la fiche technique.  
+
+</br>
 
 ---
+</br>
 
 # Procédure
 
@@ -69,13 +82,13 @@ Cette machine est allumée et pèse environ 70Go
 
 - <img width="476" height="22" alt="migrate_214_log" src="https://github.com/user-attachments/assets/0e3401f7-36a5-474a-87ee-0560858f4bd4" />  
 
-On voit ici que le disque de 70Go s'est transféré en seulement 47s !  
+On voit ici que le disque de 70Go s'est transféré en seulement **47s** !  
 
 - <img width="536" height="22" alt="migrate_214_log_3" src="https://github.com/user-attachments/assets/2a8e4e1e-c25d-4039-a2f4-f1ad4b63bb73" />  
 
-Sur cette capture on constate un downtime de seulement 102ms
+Sur cette capture on constate un downtime de seulement **102ms**
 
 - <img width="486" height="22" alt="migrate_214_log_2" src="https://github.com/user-attachments/assets/852ac7d9-3a83-45af-a1bc-dcfc981ea748" />  
 
-Et ici on constate que la migration à chaud s'est faites en seulement 1min !  
+Et ici on constate que la migration à chaud s'est faites en seulement **1min** !  
 
