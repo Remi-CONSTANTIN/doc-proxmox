@@ -12,9 +12,18 @@ C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre
 **Pas cool :**  
 - Ne permet pas de relier les 3 nœuds car la plupart des mini-PC n'ont qu'un seul port USB4
 
-## Comment savoir si vous pouvez le faire ?
-Il vous suffit de vérifier si vos machines possèdent un port USB-C sur lequel est écrit `USB4`.  
+## Prérequis matériels 
+Côté machine, il vous suffit de vérifier si vos machines possèdent un port USB-C sur lequel est écrit `USB4`.  
 Si vous ne savez pas, référez-vous à la fiche technique.  
+
+Côté câble, c'est un peu plus compliqué car il vous faudra :
+- Norme : `Thunderbolt 3` ou `4` ou `USB4` explicitement mentionné
+- Débit : Les normes au dessus tablent en général sur ces débits : 40Gpbs / 240W 
+- Longueur : Essayez de ne pas prendre au dessus de 1m car je ne vous garantie pas que les débits resteront aussi bons
+
+**Voici ce que j'ai actuellement :**
+<img width="1136" height="345" alt="amazon_basics" src="https://github.com/user-attachments/assets/aaf029f0-8a62-4e09-9c32-9661c42cb3b4" />
+
 
 </br>
 
