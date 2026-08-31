@@ -54,7 +54,7 @@ Par exemple, dans mon cas, PDM remonte le hostname de mes nœuds, mais ils ne so
 
 ### Onglet `Summary`
 Un simple onglet pour récapituler certaines informations.
-Vous pouvez continuer et valider la connexion, elle devrait s'afficher sous vos yeux.
+Vous pouvez continuer et valider la connexion, elle devrait s'afficher sous vos yeux.  
 <img width="707" height="136" alt="cluster-1_pdm_connexion" src="https://github.com/user-attachments/assets/b1a2d1ee-68ca-4602-8aac-29e2b7e867e3" />  
 (Vous remarquerez que j'ai utilisé root dans le cadre de ce LAB, mais mon précédent avertissement tient toujours.)
 
