@@ -62,6 +62,11 @@ Sans oublier d'appliquer la configuration à chaque modification !
 <img width="1654" height="232" alt="apply_ip_configuration_thunderbolt_hepaistos" src="https://github.com/user-attachments/assets/a7e36806-b990-4dbd-bb00-3c23fe4ee187" />
 </br><br/>
 
+> [!note]
+> Vous aurez sans doute remarqué que nous ne créons pas de Linux Bridge par dessus notre interface physique.
+> Eh bien c'est tout simplement parce que les vmbrX servent à relier l'interface physique aux machines virtuelles.
+> Nous utilisons ici aucune ressource virtuelle et seulement les nœuds ! 
+
 ## Configuration des nœuds Pve
 
 1. Aller dans `Datacenter` --> `Options` et modifiez le réseau dans l'option `Migration Settings`
