@@ -105,6 +105,8 @@ Pour bien visualiser l'imbrication logique des éléments du SDN :
 |Doit être créé manuellement sur chaque nœud PVE|Créé globalement au niveau du Datacenter et répliqué partout|
 |Ne gère pas l'adressage IP par lui-même|Intègre la gestion des Subnets et le lien avec l'IPAM|
 |Fonctionnement basique et autonome|Hérite de la topologie de sa Zone (ex: devient inter-PVE s'il est dans une zone VXLAN)|
+
+Un VNet est donc un switch virtuel sur lequel on vient brancher des machines virtuelles et qui est soumis au protocole de sa zone
 <br><br>
 <br><br>
 
@@ -214,7 +216,7 @@ Lorem Ipsum
 Pour tester le fonctionnement de la zone VXLAN, vous aurez besoin d'un cluster Proxmox d'au moins deux nœuds et d'une machine sur chaque PVE.  
 
 1. Comme pour les autres, créez la zone dans le SDN (`Datacenter` --> `SDN` --> `Zones`) puis commencez la configuration comme dans cet exemple :
-<img width="889" height="627" alt="vxlan1_zone" src="https://github.com/user-attachments/assets/d868800e-ffba-4e5f-91ee-964781695f1b" />
+<img width="598" height="306" alt="vxlan1_zone" src="https://github.com/user-attachments/assets/d868800e-ffba-4e5f-91ee-964781695f1b" />
 
 - `ID` : Un simple nom d'affichage limité à 8 caractères
 - `Peer Address List` : La liste des nœuds PVE concernés par la propagation du réseau. Peut inclure des PVE d'autres cluster à la seule condition que vous y ayez créé la même zone
@@ -240,7 +242,57 @@ Pour tester le fonctionnement de la zone VXLAN, vous aurez besoin d'un cluster P
 
 
 ## EVPN
-Lorem ipsum
+Ici sera abordé la mise en place d'une zone `evpn`.
+Si vous souhaitez tester la solution il vous faudra avoir à minima un nœud qui n'est pas dans le même cluster afin de simuler le cluster distant.
+C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet, le cluster est dans l'étendue `XXX.XXX.150.0/24` et mon nœud "distant" est dans `XXX.XXX.160.0/24`.
+<br><br>
+1. Pour commencer, créez un contrôleur de type `evpn` dans `Datacenter` --> `SDN` --> `Options` et renseignez comme suit :
+<img width="688" height="322" alt="evpn_controler" src="https://github.com/user-attachments/assets/0a3a785f-1763-4dfc-ae5d-1db8c818e293" />
+
+- `ID` : Un simple nom d'affichage limité à 8 caractères
+- `ASN #` : Le numéro d'identification privé de ce nœud. Il en existe des privé et des public. Vous pouvez mettre `65101` pour ce test 
+- `SDN Fabric` : Ne le configurez pas ici car nous n'en utilisons pas
+- `Peers` : L'ip de chaque nœud distant avec lesquels ton cluster doit échanger ses routes
+
+2. une fois le contrôleur créé, créez la zone dans `Datacenter` --> `SDN` --> `Zones`. Exemple :
+<img width="638" height="501" alt="evpn_zone" src="https://github.com/user-attachments/assets/6160b815-30f6-4921-8994-89b8e08d5765" />
+
+- `ID` : Un nom d'affichage simple limité à 8 caractères
+- `Primary Controller` : Le contrôleur créé à l'étape précédente 
+- `VRF-VXLAN Tag` : C'est l'identifiant unique (VNI) du routeur virtuel (VRF) qui gérera le trafic de Niveau 3 pour cette zone. Mettez un numéro (ex: 10000). Attention : Il doit être strictement identique sur le cluster principal et sur le nœud distant
+- `VNet MAC Address` : Laissez en auto. Proxmox générera une adresse MAC Anycast. La passerelle aura la même adresse MAC physique sur tous vos serveurs. Si une VM migre d'un serveur à l'autre, elle ne se rendra même pas compte que le routeur a changé
+- `Exit Nodes` : La/les passerelle qui permet aux machines virtuelles de sortir vers internet ou un réseau local physique. Vous pouvez mettre tout les noeuds Pve
+- `Primary Exit Node` : Si vous avez sélectionné plusieurs `Exit Nodes` pour la redondance, vous définissez ici lequel est le routeur principal. Mettez celui que vous voulez
+- `Exit Nodes Local Routing` : Si coché, l'`Exit Node` ne fera pas de NAT et routera le trafic directement vers les réseaux physiques qu'il connaît
+- `Advertise Subnets` : Si vous avez un routeur d'entreprise physique au-dessus de Proxmox qui "parle" BGP, cette option permet à Proxmox de lui annoncer l'existence de vos sous-réseaux virtuels. Inutile dans notre cas
+- `Disable ARP-nd Suppression` : Ne pas cocher. Par défaut, l'EVPN intercepte les requêtes ARP et y répond silencieusement grâce à sa base BGP, évitant ainsi le Broadcast. Cocher cette case désactive cette optimisation majeure de l'EVPN
+- `Route Target Import` : Paramètre BGP très avancé pour croiser des tables de routages entre plusieurs entreprises ou VRF. Laissez vide
+- `MTU, Nodes, IPAM` : Laissez par défaut (auto, All, pve), comme pour une zone classique
+
+3. Cela terminé, faites un VNet dans notre nouvelle zone `EVPN1`. Comme d'habitude, cela se passe dans `Datacenter` --> `SDN` --> `VNets`
+<img width="643" height="303" alt="evpn_vnet" src="https://github.com/user-attachments/assets/753eff20-e3a8-4ace-a5c8-6f403fe3eb54" />
+
+- `Name` : Un nom d'affichage simple limité à 8 caractères
+- `Alias` : Une description si besoin
+- `Zone` : Notre nouvelle zone EVPN
+- `Tag` : Un tag obligatoirement différent de celui de `VRF-VXLAN Tag` définis dans notre zone, `10010` par exemple.
+
+> [!caution]
+> Le tag doit être **identitique sur le cluster et le noeud/cluster distant**. C'est ce qui permet aux machines de communiquer
+
+4. Et pour finir avec la configuration du cluster, créez un réseau dans le VNet que vous venez de configurer
+
+**Onglet General**  
+- `Subnet` : Le réseau que vous voulez
+- `Gateway` : La passerelle associée de votre réseau
+- `SNAT` : Permet à vos machines d'utiliser les `Exit Node` que vous avez configurez dans votre zone pour sortir sur internet ou sur le réseau physique
+- `DNS Zone Prefix` : Pas besoin ici car nous n'avons pas configuré de service DNS externe
+
+**Onglet DHCP Range**  
+Contrairement à la zone `simple`, la zone `EVPN` ne fournis pas de DHCP à cause du fait qu'elle soit distribuée et que cela créerait des conflits d'IP.  
+Vous pouvez tout de même faire des étendues car le DHCP n'est pas la seule façon de donner une IP à une machine ! En effet si vous installez des machines avec `Cloud-Init` il se basera sur l'IPAM pour en attribuer une de libre  
+<img width="1053" height="395" alt="evpn_vnet_subnet" src="https://github.com/user-attachments/assets/a07d8a03-1cc0-4bea-a381-5d3bcc808265" />
+
 
 ---
 
