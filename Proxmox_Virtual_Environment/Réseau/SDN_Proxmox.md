@@ -56,34 +56,83 @@ Le `C-VLAN` correspond au tag interne et le `S-VLAN` à l'externe, ajouté et g�
 <br><br>
 
 ### VXLAN
-Réseau fermé comme la zone simple, permet tout de même le SNAT mais pas le DHCP --> Nécessite un routeur virtuel dans le réseau pour avoir accès au DHCP
-SNAT au lieu d'un routeur virtuel tout à fait adapté pour un laboratoire mais n'est pas conseillé en prod car routeur virtuel est plus adapté (redirection de port, ids ips etc..).
+Une zone VXLAN fonctionne de manière similaire à une zone simple, mais avec un avantage majeur : elle permet la communication entre les machines virtuelles même si elles ne sont pas hébergées sur le même nœud Proxmox.Le VXLAN crée un tunnel (Overlay) qui encapsule le trafic de Niveau 2 (Ethernet) dans des paquets IP de Niveau 3 (UDP). Ainsi, des VMs réparties sur plusieurs serveurs physiques se comportent comme si elles étaient branchées sur le même switch local.Comme d'habitude, un tableau sera plus clair :
+
+|Zone Simple|Zone VXLAN|
+|-----------|----------|
+|Permet de créer un réseau virtuel isolé|Idem|
+|Restreint au nœud Proxmox local|Étendu à travers plusieurs nœuds (Inter-PVE)|
+|Fournie par Proxmox SDN|Idem|
+|Natif (via Proxmox SDN)|Natif (via Proxmox SDN)|
+
+En résumé, le VXLAN est une sorte de zone simple mais fournissant de la commutation (switching) inter-PVE.  
+Cela peut être très utile dans des clusters de home-lab ou de petites infrastructures
+
+> [!tip]
+> Une zone VXLAN standard est moins recommandée à plus grande échelle. En effet, le protocole VXLAN utilise par défaut la méthode du "Flood and Learn" (inonder le réseau pour trouver les adresses MAC inconnues), ce qui génère trop de trafic de diffusion (Broadcast/Multicast) sur les grosses infrastructures
 <br><br>
 
 ### EVPN
-Lorem Ipsum
+La zone EVPN vient corriger le défaut principal du `VXLAN` consistant à inonder le réseau de broadcast
+
+Pour comprendre l'EVPN, il faut le voir comme une architecture réseau à deux niveaux distincts travaillant ensemble :
+- `Le transporteur (Data Plane)` : L'EVPN utilise toujours le protocole VXLAN pour encapsuler les trames Ethernet et les faire voyager entre les nœuds Proxmox.
+- `Le cerveau (Control Plane)` : C'est ici que la magie opère. L'EVPN s'appuie sur le protocole de routage BGP. Au lieu d'inonder le réseau pour trouver où se cache une machine cible, les Pve se préviennent via BGP qu'ils hébergent une machine.
+
+|Zone VXLAN classique|Zone EVPN|
+|--------------------|---------|
+|Permet de faire communiquer des VMs sur des PVE différents|Idem|
+|Méthode de découverte "Flood and Learn" (génère beaucoup de Broadcast)|Découverte intelligente et ciblée via le protocole BGP|
+|Totalement autonome (ne nécessite pas de Contrôleur)|Nécessite obligatoirement de configurer un Contrôleur BGP/EVPN|
+|Recommandé pour les petites infrastructures ou les maquettes|Le standard de l'industrie pour les grands Datacenters et le multi-sites|
+
+En résumé,l'`EVPN` étire un réseau virtuel de Niveau 2 par-dessus votre réseau physique, tout en gardant une table de routage parfaitement claire et optimisée. C'est la solution d'entreprise par excellence lorsque l'on souhaite interconnecter plusieurs clusters distants sans saturer les liens réseau physiques.
 <br><br>
 <br><br>
 
-## VTNets
-Lorem ipsum
+## VNets
+Pour faire simple, un VNet est l'équivalent d'un switch virtuel. C'est le point de connexion direct sur lequel vous allez brancher les cartes réseaux de vos machines virtuelles et de vos conteneurs.
+
+Là où la Zone définit la technologie et le protocole de transport sous-jacent (le "comment" : `Simple`, `VLAN`, `VXLAN`, `EVPN`), le VNet représente le domaine de diffusion isolé (le réseau logique). Un VNet est obligatoirement rattaché à une seule et unique Zone.
+
+Pour bien visualiser l'imbrication logique des éléments du SDN :
+- `Zone` : C'est la technologie de câblage et d'interconnexion.
+- `VNet` : C'est le switch physique virtuel.
+- `Subnet` : C'est la plage d'adresses IP (ex: 192.168.1.0/24) et le serveur DHCP configurés sur ce switch.
+
+|Linux Bridge|VNet SDN|
+|------------|--------|
+|Doit être créé manuellement sur chaque nœud PVE|Créé globalement au niveau du Datacenter et répliqué partout|
+|Ne gère pas l'adressage IP par lui-même|Intègre la gestion des Subnets et le lien avec l'IPAM|
+|Fonctionnement basique et autonome|Hérite de la topologie de sa Zone (ex: devient inter-PVE s'il est dans une zone VXLAN)|
 <br><br>
 <br><br>
 
 ## IPAM
-pve (default native)  
-netbox (api)  
-php-ipam (api)  
+L'IPAM est l'inventaire central de votre réseau virtuel. Son rôle est de savoir exactement quelles adresses IP sont libres, et lesquelles sont assignées à quelles machines virtuelles. Le SDN automatise cette tâche de pair avec le DHCP natif : lorsqu'une VM démarre, le SDN pioche une IP libre dans l'IPAM, la configure, et verrouille cette IP dans son registre.
+
+Proxmox propose trois plugins :
+1. `pve` : Solution par défaut de Pve, fournis dès l'installation du système. Fonctionne très bien pour enregistrer les IPs des machines virtuelles du cluster
+2. `netbox` : Mise en place plus complexe, mais considéré comme la référence en entreprise. Permet de gérer les IPs à l’échelle du parc et plus seulement du cluster.
+3. `phpIPAM` : Autre outils populaire, spécialisé dans la gestion visuelle des sous-réseaux et des VLANs. Ne se contente pas non plus des IPs du cluster Pve mais englobe toute le parc.
 <br><br>
 <br><br>
 
 ## VNet Firewall
-Lorem ipsum
+Jusqu'à présent, le pare-feu Proxmox se gérait au niveau Datacenter, Nœud ou VM. Le SDN introduit le pare-feu au niveau du réseau (VNet).  
+Cela permet de contrôler les flux de manière centralisée (ex: isoler deux sous-réseaux entre eux au sein d'une même Zone)
+Le fonctionnement reste le même.
 <br><br>
 <br><br>
 
 ## Fabrics
-Lorem ipsum
+Une Fabric est l'infrastructure de routage sous-jacente qui permet à vos nœuds physiques de se découvrir et de se parler. Elle garantit que le chemin IP entre les serveurs est le plus rapide, redondant ou sécurisé possible, sans se soucier du trafic des VMs.
+
+Proxmox propose quatre types de Fabrics selon l'architecture de votre datacenter :
+- `WireGuard` : Crée un tunnel chiffré de bout en bout entre les nœuds. Idéal pour des clusters multi-sites ou lorsque les serveurs doivent communiquer à travers Internet. On pensera ici à l'EVPN
+- `OSPF` : Protocole de routage dynamique interne ultra-classique. Parfait pour intégrer un cluster Proxmox dans un réseau d'entreprise existant utilisant déjà OSPF
+- `OpenFabric / IS-IS` (Le standard Datacenter) : Conçu spécifiquement pour les architectures réseau "Spine-Leaf" à très grande échelle. Extrêmement rapide, très utilisé pour faire transiter du trafic Ceph massif
+- `BGP` : Le protocole qui fait tourner Internet. Indispensable pour annoncer vos réseaux virtuels aux routeurs physiques "Upstream", et cœur absolu du fonctionnement de l'EVPN
 <br><br>
 <br><br>
 
