@@ -209,8 +209,10 @@ C'est tout pour la mise en place d'un zone simple
 ## VLAN
 **A mettre en place sur proxmox physique car marche pas sur maquette**
 
+
 ## QinQ
-Lorem Ipsum
+Le QinQ étant assez niche, ce type de zone ne sera pas abordé ici
+<br><br>
 
 ## VXLAN
 Pour tester le fonctionnement de la zone VXLAN, vous aurez besoin d'un cluster Proxmox d'au moins deux nœuds et d'une machine sur chaque PVE.  
@@ -225,8 +227,9 @@ Pour tester le fonctionnement de la zone VXLAN, vous aurez besoin d'un cluster P
 - `Nodes` : Permet de restreindre l'activation de la zone à certains nœuds. Utile dans le cas où il faut étendre un LAN entre quelques nœuds seulement de deux (ou plus) clusters distants
 - `IPAM` : Même si le DHCP n'est pas proposé dans ce type de zone, il peut être utile de tenir un inventaire des IPs. De plus, peut être utilisé pour assigner une IP libre automatiquement avec Cloud-Init, un peu comme un DHCP. Le choix par défaut étant `pve`
 - `DNS Server` + `Reverse DNS Server` + `DNS Zone` : Utile si vous avez un service DNS externe à Proxmox. Pas abordé ici
+<br><br>
 
-2. Une fois la zone, créé et comme pour les autres zones, créez un nouveau VNet dans `Datacenter` --> `SDN` --> `VNets`
+2. Une fois la zone, créée et comme pour les autres zones, créez un nouveau VNet dans `Datacenter` --> `SDN` --> `VNets`
 <img width="855" height="444" alt="vnets_vxlan" src="https://github.com/user-attachments/assets/9dc4ea33-7649-484a-b16b-a8bccbf4e5ba" />
 
 - `Name` : Nom d'affichage du VNet
@@ -235,11 +238,32 @@ Pour tester le fonctionnement de la zone VXLAN, vous aurez besoin d'un cluster P
 - `Tag` : Correspond au tag VNI (VXLAN Network Identifier) et non pas au tag VLAN comme pour la zone VLAN. Nous ne sommes donc pas limité à 4096 tag mais à 16 777 215
 - `Isolate Ports` : Isole les machines entre elles dans le réseau sans couper l'accès à la passerelle
 - `VLAN Aware` : Autorise les flux tagués si vous utilisez un routeur virtuel dans le réseau
+<br><br>
 
-3. Dans ce même VNet, créez un réseau dans la partie `Subnets` on complétant les deux onglets : 
-**A finir**
+3. Dans ce même VNet, créez un réseau dans la partie `Subnets` en complétant les deux onglets : 
+<img width="1055" height="375" alt="vxlan_vnet_subnet" src="https://github.com/user-attachments/assets/88680ef9-fb81-449a-8495-6e752f7542ba" />
 
+**Onglet General**  
+- `Subnet` : L'adressage IP du réseau à créer
+- `Gateway` : La passerelle associée
+- `SNAT` : Permet d'autoriser le NAT à travers le nœud pour avoir accès à internet ou accéder au réseau physique
+- `DNS Zone Prefix` : Utile seulement si vous avez configuré une intégration avec un serveur DNS externe, ce n'est pas notre cas ici
 
+**Onglet DHCP Range**  
+Contrairement à la zone `simple`, la zone `VXLAN` ne fournit pas de DHCP à cause du fait qu'elle soit distribuée et que cela créerait des conflits d'IP.  
+Vous pouvez tout de même faire des étendues car le DHCP n'est pas la seule façon de donner une IP à une machine ! En effet si vous installez des machines avec `Cloud-Init` il se basera sur l'IPAM pour en attribuer une de libre  
+<br><br>
+
+4. Et pour finir la configuration, appliquez les modifications dans `Datacenter` --> `SDN`
+<br><br>
+
+5. Vous n'avez plus qu'à tester avec deux machines virtuelles en suivant ces étapes :
+- Créer deux machines virtuelles avec n'importe quel système d'exploitation
+- Leur assigner notre nouvelle VNet VXLAN et de leur donner une IP manuellement
+- Et pour finir de les ping entre elles
+
+**C'est tout pour la mise en pratique d'une zone `VXLAN` !**
+<br><br>
 
 ## EVPN
 Ici sera abordé la mise en place d'une zone `evpn`.
@@ -253,6 +277,7 @@ C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet
 - `ASN #` : Le numéro d'identification privé de ce nœud. Il en existe des privé et des public. Vous pouvez mettre `65101` pour ce test 
 - `SDN Fabric` : Ne le configurez pas ici car nous n'en utilisons pas
 - `Peers` : L'ip de chaque nœud distant avec lesquels ton cluster doit échanger ses routes
+<br><br>
 
 2. une fois le contrôleur créé, créez la zone dans `Datacenter` --> `SDN` --> `Zones`. Exemple :
 <img width="638" height="501" alt="evpn_zone" src="https://github.com/user-attachments/assets/6160b815-30f6-4921-8994-89b8e08d5765" />
@@ -268,6 +293,7 @@ C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet
 - `Disable ARP-nd Suppression` : Ne pas cocher. Par défaut, l'EVPN intercepte les requêtes ARP et y répond silencieusement grâce à sa base BGP, évitant ainsi le Broadcast. Cocher cette case désactive cette optimisation majeure de l'EVPN
 - `Route Target Import` : Paramètre BGP très avancé pour croiser des tables de routages entre plusieurs entreprises ou VRF. Laissez vide
 - `MTU, Nodes, IPAM` : Laissez par défaut (auto, All, pve), comme pour une zone classique
+<br><br>
 
 3. Cela terminé, faites un VNet dans notre nouvelle zone `EVPN1`. Comme d'habitude, cela se passe dans `Datacenter` --> `SDN` --> `VNets`
 <img width="643" height="303" alt="evpn_vnet" src="https://github.com/user-attachments/assets/753eff20-e3a8-4ace-a5c8-6f403fe3eb54" />
@@ -278,8 +304,9 @@ C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet
 - `Tag` : Un tag obligatoirement différent de celui de `VRF-VXLAN Tag` définis dans notre zone, `10010` par exemple.
 
 > [!caution]
-> Le tag doit être **identitique sur le cluster et le noeud/cluster distant**. C'est ce qui permet aux machines de communiquer
+> Le tag doit être **identique sur le cluster et le nœud/cluster distant**. C'est ce qui permet aux machines de communiquer
 
+<br><br>
 4. Et pour finir avec la configuration du cluster, créez un réseau dans le VNet que vous venez de configurer
 
 **Onglet General**  
@@ -289,7 +316,7 @@ C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet
 - `DNS Zone Prefix` : Pas besoin ici car nous n'avons pas configuré de service DNS externe
 
 **Onglet DHCP Range**  
-Contrairement à la zone `simple`, la zone `EVPN` ne fournis pas de DHCP à cause du fait qu'elle soit distribuée et que cela créerait des conflits d'IP.  
+Contrairement à la zone `simple`, la zone `EVPN` ne fournit pas de DHCP à cause du fait qu'elle soit distribuée et que cela créerait des conflits d'IP.  
 Vous pouvez tout de même faire des étendues car le DHCP n'est pas la seule façon de donner une IP à une machine ! En effet si vous installez des machines avec `Cloud-Init` il se basera sur l'IPAM pour en attribuer une de libre  
 <img width="1053" height="395" alt="evpn_vnet_subnet" src="https://github.com/user-attachments/assets/a07d8a03-1cc0-4bea-a381-5d3bcc808265" />
 
