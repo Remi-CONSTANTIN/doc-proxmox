@@ -147,7 +147,7 @@ Afin d'appliquer ces connaissances et de mieux comprendre comment utiliser ce sa
 Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 <br><br>
 1. La première étape est de créer la zone simple dans `Datacenter` --> `SDN` --> `Zones`
-<img width="800" height="419" alt="simple_zone" src="https://github.com/user-attachments/assets/894ddb7e-1300-4a05-afaf-ac3d1442e596" />
+<img width="720" height="377" alt="simple_zone" src="https://github.com/user-attachments/assets/894ddb7e-1300-4a05-afaf-ac3d1442e596" />
 
 - `ID` : Un simple nom d'affichage limité à 8 caractères
 - `MTU` : Taille des paquets, laissez en auto dans le cas d'une zone simple
@@ -158,7 +158,7 @@ Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 <br><br>
 
 2. Allez dans `Datacenter` --> `SDN` --> `VNets` et créez un nouveau `VNet`
-<img width="779" height="419" alt="vnets_simple" src="https://github.com/user-attachments/assets/8532beba-d4fb-4ee9-92c5-4440d8fa1cfb" />
+<img width="701" height="377" alt="vnets_simple" src="https://github.com/user-attachments/assets/8532beba-d4fb-4ee9-92c5-4440d8fa1cfb" />
 
 - `Name` : Nom d'affichage du VNet
 - `Alias` : Description ou alias du VNet
@@ -170,7 +170,7 @@ Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 3. Dans ce même VNet, créez un réseau dans la partie `Subnets` en complétant les deux onglets : 
 
 **General**  
-<img width="1141" height="383" alt="subnet1_vnets_simple" src="https://github.com/user-attachments/assets/2cda92d4-804f-435e-ad16-68051a30ed29" />
+<img width="1026" height="344" alt="subnet1_vnets_simple" src="https://github.com/user-attachments/assets/2cda92d4-804f-435e-ad16-68051a30ed29" />
 
 - `Subnet` : L'adressage IP du réseau à créer
 - `Gateway` : La passerelle associée
@@ -180,7 +180,7 @@ Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 
 **DHCP Ranges**  
 Vous pouvez ajouter une/des étendue(s) DHCP dans le second onglet
-<img width="1267" height="430" alt="dhcp_subnet1_vnets_simple" src="https://github.com/user-attachments/assets/69d28267-aa82-4f24-8009-6919b940b1d7" />
+<img width="1140" height="301" alt="dhcp_subnet1_vnets_simple" src="https://github.com/user-attachments/assets/69d28267-aa82-4f24-8009-6919b940b1d7" />
 <br><br>
 
 4. Une fois tout cela fait, il faut appliquer les modifications dans `Datacenter` --> `SDN`
@@ -317,8 +317,37 @@ C'est ici mon cas, de plus je l'ai placé dans un second réseau local. En effet
 **Onglet DHCP Range**  
 Contrairement à la zone `simple`, la zone `EVPN` ne fournit pas de DHCP à cause du fait qu'elle soit distribuée et que cela créerait des conflits d'IP.  
 Vous pouvez tout de même faire des étendues car le DHCP n'est pas la seule façon de donner une IP à une machine ! En effet si vous installez des machines avec `Cloud-Init` il se basera sur l'IPAM pour en attribuer une de libre  
-<img width="1053" height="395" alt="evpn_vnet_subnet" src="https://github.com/user-attachments/assets/a07d8a03-1cc0-4bea-a381-5d3bcc808265" />
+<img width="737" height="276" alt="evpn_vnet_subnet" src="https://github.com/user-attachments/assets/a07d8a03-1cc0-4bea-a381-5d3bcc808265" />
 
+5. Pour terminer la configuration du cluster, appliquez les modifications dans `Datacenter` --> `SDN`
+<br><br>
+
+6. Le cluster étant prêt, il vous faudra répéter exactement les mêmes manœuvres sur le nœud/cluster distant en veillant à modifier quelques valeurs :
+- `Peers` : Toujours dans la configuration du contrôleur distant, faites attention à bien changer les adresses IP pour mettre celles du cluster local séparées par des virgules (dans mon cas je mettrais `XXX.XXX.150.80, XXX.XXX.150.71, XXX.XXX.150.123`).
+- `DHCP Range` : Si vous mettez la même étendue DHCP sur les deux clusters, alors les `Guest Agent` vont attribuer les mêmes IP des deux côtés, créant ainsi des conflits d'IP ! En effet, nous utilisons ici l'IPAM `pve` gérant ses baux localement. Nous n'aurions pas rencontré ce problème en utilisant un IPAM commun à tout le monde.  
+**Faites donc attention à ne pas les faire se chevaucher.**
+<br><br>
+
+7. Avant de tester les machines virtuelles, vérifiez que vos clusters s'échangent bien leurs routes.  
+Ouvrez le shell d'un de vos nœuds et tapez :
+```
+vtysh -c "show bgp sum"
+```
+Si la colonne `State/PfxRcd` affiche des chiffres, le tunnel est opérationnel. Si elle affiche `Idle` ou `Connect`, il y a une erreur de configuration (ASN différent) ou un blocage au niveau du pare-feu physique (Port TCP 179 non autorisé).
+
+Retour de la commande sur le nœud distant :
+<img width="827" height="209" alt="vtysh-c_show_bgp_sum" src="https://github.com/user-attachments/assets/b2c226aa-d3eb-4307-a61b-cdaaf8e783b7" />
+<br><br>
+
+8. Une fois cela fait, il n'y a plus qu'à configurer une machine sur le cluster local et une sur le nœud distant avec notre nouveau VNet
+<img width="500" height="208" alt="evpn_vnet_on_debian" src="https://github.com/user-attachments/assets/2928e291-4b07-4fff-979b-61c443f45f8d" />
+<br><br>
+
+9. Puis de leur attribuer une IP fixe différente à toutes les deux pour voir si elles se ping !
+<img width="596" height="286" alt="evpn_ping" src="https://github.com/user-attachments/assets/0c40a5bb-eab1-4ef5-b092-f1a9ee4edd72" />
+<br><br>
+
+**BINGO ça fonctionne !**
 
 ---
 
