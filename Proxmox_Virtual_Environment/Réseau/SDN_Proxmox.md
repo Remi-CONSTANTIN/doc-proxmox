@@ -151,7 +151,7 @@ Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 
 - `ID` : Un simple nom d'affichage limité à 8 caractères
 - `MTU` : Taille des paquets, laissez en auto dans le cas d'une zone simple
-- `Nodes` : Vous pouvez limiter la création de cette zone à certains nœuds de votre cluster. À vous d'adapter en fonction de vos besoins
+- `Nodes` : Vous pouvez limiter la création de cette zone à certains nœuds de votre cluster. À vous d'adapter en fonction de vos besoins. Laissez `All` ici
 - `IPAM` : Par défaut `pve` car natif à Proxmox. Vous pouvez en choisir un autre. Le sujet sera abordé en détails dans la partie `IPAM`
 - `DNS Server` + `Reverse DNS Server` + `DNS Zone` : Utile si vous avez un service DNS externe à Proxmox. Pas abordé ici
 - `Automatic DHCP` : Active le DHCP sur la zone. L'IPAM ne sert à rien si vous choisissez de ne pas activer le DHCP
@@ -175,7 +175,7 @@ Il sera abordé ici la création et l'utilisation d'une zone de type `simple`
 - `Subnet` : L'adressage IP du réseau à créer
 - `Gateway` : La passerelle associée
 - `SNAT` : Permet d'autoriser le NAT à travers le nœud pour avoir accès à internet par exemple
-- `DNS Zone Prefix` : Permet d'associer un préfixe DNS aux machines du réseau si vous l'avez configuré dans la zone 
+- `DNS Zone Prefix` : Utile seulement si vous avez configuré une intégration avec un serveur DNS externe, ce n'est pas notre cas ici
 <br><br>
 
 **DHCP Ranges**  
@@ -206,8 +206,59 @@ C'est tout pour la mise en place d'une zone simple.
 <br><br>
 
 ## VLAN
-**A mettre en place sur proxmox physique car marche pas sur maquette**
+Vous allez voir dans cette partie l'utilisation d'une zone de type `vlan`.  
+Comme nous avons pu le voir dans la partie théorique, cette zone est un peu spéciale car PVE ne gère plus le réseau et le délègue à l'infrastructure physique.  
+Nous aurons l'occasion de voir ce qui va changer.
 
+> [!warning]
+> Attention ! Je vous conseille de tester ces manipulations sur un PVE physique et non pas sur des PVE virtuels comme je le fais dans le reste du tutoriel, car cela nécessite de faire de la "bidouille".
+> L'objectif ici n'est pas de compliquer les choses. Je vais donc passer sur un cluster physique
+
+1. Comme pour toutes les zones, allez dans l'onglet correspondant pour la créer (`Datacenter` --> `SDN` --> `Zones`)
+<img width="614" height="410" alt="vlan_zone" src="https://github.com/user-attachments/assets/c38c7a7e-efeb-48ea-91d9-fe64c0e6ad5d" />
+
+- `ID` : Un simple nom d'affichage limité à 8 caractères
+- `Bridge` : Votre bridge Linux relié à votre réseau physique (généralement `vmbr0`)
+- `MTU` : Taille des paquets, laissez en auto dans le cas d'une zone VLAN
+- `Nodes` : Vous pouvez limiter la création de cette zone à certains nœuds de votre cluster. À vous d'adapter en fonction de vos besoins. Laissez `All` ici
+- `IPAM` : Pas besoin de l'IPAM la plupart du temps car cela est géré par votre infrastructure réseau. Laissez `pve`
+<br><br>
+
+2. Une fois la zone créée, il vous faut faire un premier VNet dans `Datacenter` --> `SDN` --> `VNets`
+<img width="578" height="429" alt="vlan_vnet" src="https://github.com/user-attachments/assets/5e5d31f6-c9b9-4f6c-a25b-5fe4cb98e1ea" />
+
+- `Name` : Un simple nom d'affichage limité à 8 caractères
+- `Alias` : Description ou alias du VNet
+- `Zone` : La zone à utiliser. Dans notre cas, la zone `VLAN1`
+- `Tag` : Tout simplement le tag avec lequel les flux doivent sortir du nœud PVE
+
+> [!warning]
+> Le tag doit être associé à un réseau dans votre infrastructure réseau physique et le port sur lequel le PVE est branché doit pouvoir laisser passer ce réseau !
+> Sinon, le réseau ne fonctionnera tout simplement pas sur votre machine.
+
+<br><br>
+3. Cela fait, vous allez configurer le réseau associé au tag dans la partie `Subnets` du nouveau VNet. Nous n'allons rien inventer et simplement reporter les informations du réseau associé au tag de vos équipements réseau.
+<img width="689" height="247" alt="vlan_vnet-subnet" src="https://github.com/user-attachments/assets/f23ba296-4890-4f60-b351-9eb49f829957" />
+
+- `Subnet` : Le réseau associé au tag. Reportez-vous à la configuration du VLAN dans votre infrastructure réseau physique
+- `Gateway` : La passerelle de ce réseau (ce n'est donc pas le PVE qui jouera ce rôle dans ce type de zone)
+- `SNAT` : **Ne pas activer** car ce n'est pas le PVE qui donnera accès à Internet ou au reste du réseau
+- `DNS Zone Prefix` : Utile seulement si vous avez configuré une intégration avec un serveur DNS externe, ce n'est pas notre cas ici
+<br><br>
+
+4. Pensez à appliquer les modifications dans `Datacenter` --> `SDN`
+<br><br>
+
+5. Vous pouvez maintenant tester en associant ce nouveau VNet tagué à une machine de votre choix !  
+Il vous faudra configurer l'IP manuellement ou pas, en fonction de la présence ou non d'un DHCP dans ce réseau.
+
+Exemple en ajoutant une carte réseau à une de mes machines de test :
+<img width="491" height="287" alt="valn_interface_vm-cours" src="https://github.com/user-attachments/assets/d7d4c40c-ed33-46f1-8cc1-44734ac7dbad" />
+
+<img width="706" height="117" alt="vlan_ip_vm-cours" src="https://github.com/user-attachments/assets/8212d3ce-0ad6-4117-8b90-0ddc924a27db" />
+<br><br>
+
+**Vous avez maintenant terminé la mise en place d'une zone `vlan` !**
 
 ## QinQ
 Le QinQ étant assez niche, ce type de zone ne sera pas abordé ici
