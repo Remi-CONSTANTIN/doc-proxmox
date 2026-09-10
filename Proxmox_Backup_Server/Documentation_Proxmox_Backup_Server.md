@@ -76,6 +76,42 @@ Pour planifier vos sauvegardes, le procédé ne change pas avec ou sans PBS, tou
 
 ---
 
+### Paramétrage d'une tâche de sauvegarde dans PVE
+Maintenant que l'infrastructure de sauvegarde est prête, il ne reste plus qu'à programmer une tâche de sauvegarde dans le cluster PVE
+
+Cela se passe dans `Datacenter` --> `Backup` --> Cliquez sur `Add`, puis spécifiez quelques paramètres dans les différents onglets :
+
+**Onglet General**  
+1. `Node` : Permet d'afficher seulement les machines virtuelles des nœuds sélectionnés dans le tableau de sélection
+2. `Storage` : Emplacement de stockage des sauvegardes. C'est ici que l'on va sélectionner le datastore fourni par le PBS
+3. `Schedule` : La planification de la tâche de sauvegarde. À adapter en fonction de votre infrastructure
+4. `Selection Mode` : Des préréglages (presets) pour vous aider à sélectionner plus rapidement les machines virtuelles dans le tableau.
+5. `Compression` : Permet de choisir entre 3 modes de compression (`lzo` : rapide, `gzip` : bonne compression, `zstd` : rapide + excellente compression + option recommandée par défaut). Ce champ est grisé si vous sélectionnez un datastore issu d'un PBS, car son fonctionnement est totalement différent
+6. `Mode` : Permet de choisir entre trois comportements :  
+   a. `snapshot` : Prend une image instantanée de la machine pendant qu'elle fonctionne. N'est pas exempt de potentiels problèmes de corruption sur les machines les plus sensibles (comme les bases de données), bien que le `qemu-guest-agent` réduise le risque. Permet de supprimer l'interruption de service (downtime)  
+   b. `suspend` : Gèle la machine le temps de la sauvegarde, ce qui coupe les connexions actives et implique une courte interruption de service  
+   c. `stop` : Arrête proprement la machine avant la sauvegarde. Implique une coupure de service totale, mais évite les problèmes de corruption de données  
+8. `Enable` : Active la tâche si la case est cochée
+9. `Job Comment` : Un simple commentaire si besoin
+<br><br>
+**Onglet Notifications**  
+Vous avez le choix entre :
+- `Use global notification settings` : Envoie une notification en utilisant les règles définies dans `Datacenter` --> `Notifications`
+- `Use sendmail to send an email (legacy)` : Envoie un e-mail à l'adresse choisie à chaque fois que la tâche s’exécute, ou seulement quand elle échoue (nécessite de configurer Postfix via la CLI)
+<br><br>
+**Onglet Retention**  
+C'est ici que vous paramétrez la rétention des sauvegardes (le nombre de sauvegardes à conserver dans le temps). Ce n'est pas forcément facile quand on n'y est pas habitué. Vous pouvez vous aider du bouton `Schedule Simulator` situé tout à droite de l'écran quand vous êtes dans l'onglet `Backup`
+<br><br>
+**Onglet Note Template**  
+Définit la note qui s'affichera à côté de la sauvegarde dans le datastore de sauvegarde. Cela peut être intéressant pour différencier les sauvegardes issues de plusieurs tâches différentes  
+N'hésitez pas à utiliser les variables `{{cluster}}`, `{{guestname}}`, `{{node}}` et `{{vmid}}` pour ajouter des informations automatiquement à la note
+Exemple : `[CRITIQUE] - {{guestname}}` peut donner `[CRITIQUE] - web-server`
+<br><br>
+**Onglet Advanced**  
+Fournit quelques autres options que nous n'aborderons pas ici, mais n'hésitez pas à consulter la [documentation officielle](https://pve.proxmox.com/wiki/Backup_and_Restore#vzdump_configuration)
+
+---
+
 ### Redondance
 La redondance d'un PBS n'est pas la même qu'au sens d'un cluster proxmox. C'est à dire que si on déploie deux PBS, les deux ne pourront pas se répartir la charge ni être configurés en Fail-Over. 
 A la place on peut déployer deux PBS sur deux sites différents où celui qui est distant va venir tirer les sauvegardes des machines afin de prévenir la perte de données à cause d'un événement sur le site principal.
