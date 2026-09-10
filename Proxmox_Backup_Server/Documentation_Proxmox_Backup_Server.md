@@ -1,3 +1,10 @@
+# Guide de prise en main de la sauvegarde avec Proxmox Backup Server
+Vous trouverez dans cette ressource, un guide pour découvrir et apprendre à utiliser la sauvegarde dans Proxmox allant de la mise en place d'un PBS à la création d'un tâche de sauvegarde dans PVE  
+
+> [!note]
+> Documentation réalisée sous PVE 9 et PBS 4
+
+
 # Installation
 PBS se monte un peu comme un PVE. C'est à dire qu'il vous faudra une clé USB bootable et un serveur physique pour l'installer. L'installeur est le même que PVE.
 
