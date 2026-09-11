@@ -4,6 +4,8 @@ Ce guide a pour but de vous expliquer le fonctionnement et la mise en place de r
 > [!note]
 > Documentation réalisée sur PVE 9
 
+---
+
 # Mise en place  
 Tout se passe dans l'onglet `Datacenter` --> `Notifications` et se divise en deux parties :
 
@@ -74,6 +76,7 @@ Exemple simple permettant de recevoir des notifications à chaque exécution de 
 **- Onglet Targets to notify**  
 C'est ici que vous sélectionnez tout simplement la méthode de notification (le Endpoint Discord) que nous avons créée à l'étape précédente  
 
+---
 
 # Annexes
 ## BODY pour la notification Discord
