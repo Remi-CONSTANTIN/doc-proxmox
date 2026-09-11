@@ -1,6 +1,9 @@
 # Guide de paramétrage des notifications Discord
 Ce guide a pour but de vous expliquer le fonctionnement et la mise en place de règles de notifications dans PVE, dans une optique de supervision de l'infrastructure.
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 # Mise en place  
 Tout se passe dans l'onglet `Datacenter` --> `Notifications` et se divise en deux parties :
 
