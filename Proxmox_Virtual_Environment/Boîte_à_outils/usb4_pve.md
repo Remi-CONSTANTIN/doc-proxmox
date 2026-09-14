@@ -1,6 +1,9 @@
 # Introduction
 Lors de la mise en place d'un cluster Pve, il est généralement conseillé de séparer les flux gourmands en bande passante (migration VMs, réplication ZFS, CEPH etc...) des flux sensibles à la latence.
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ## Objectif
 C'est justement ce que nous allons faire ici, en ajoutant un câble USB4-C entre deux nœuds Pve (bien qu'il existe plusieurs façons de les relier)
 
