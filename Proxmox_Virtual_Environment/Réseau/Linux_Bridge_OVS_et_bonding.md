@@ -2,6 +2,9 @@
 
 Nous parlerons ici de la partie réseau des nœuds PVE sans nous pencher sur la partie SDN, que nous verrons dans une autre partie
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ## Linux Bridge VS OVS
 
 ### Linux Bridge
