@@ -2,6 +2,9 @@
 Cette procédure fait suite à la création d'un LUN sur mon NAS Synology, que vous pouvez retrouver [ici](https://github.com/tadaron/Mon-Home-Lab/blob/4146b9909a38964018f17ecdcbde4efbe6cc987b/Infra/Services/Synology/SAN-Synology_configuration.md).  
 L'objectif est d'utiliser un LUN pour créer un datastore Proxmox afin d'y mettre, par exemple, des machines virtuelles, des ISOs ou des images de conteneurs. 
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 # Procédure
 Pouvoir utiliser un LUN comme datastore Proxmox ne se fait malheureusement pas en 2 clics et nécessite, dans un premier temps, la connexion du LUN puis son formatage.
 Nous verrons ici comment faire cela.
