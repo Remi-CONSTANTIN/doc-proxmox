@@ -1,6 +1,9 @@
 # Guide de mise en place de la notification Proxmox sur Discord
 Vous trouverez ici des ressources sur la mise en place des notifications Proxmox dans un salon Discord via l'utilisation de l'option `Webhook`
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ---
 
 # Mise en place
