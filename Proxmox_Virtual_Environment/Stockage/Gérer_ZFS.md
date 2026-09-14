@@ -1,6 +1,9 @@
 # Introduction
 Vous trouverez ici mes notes sur l'utilisation du système de fichiers `ZFS` sur Proxmox
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 # Pratique
 
 ## Supprimer un nœud PVE de l'architecture ZFS
