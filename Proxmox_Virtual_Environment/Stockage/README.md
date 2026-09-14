@@ -4,6 +4,9 @@ L'objectif de ce document est de décortiquer la mise en place d'un stockage dis
 
 Nous allons aborder le principe théorique des composants de stockage ZFS et des mécanismes d'élection de quorum et de basculement (*failover*), puis nous passerons à la mise en pratique pas à pas illustrée à partir des captures d'écran du cluster de test (`FYC-Cluster`).
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ---
 
 # La théorie
