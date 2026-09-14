@@ -2,6 +2,9 @@
 Une erreur survient lors de la sauvegarde d'un conteneur LXC sur un datastore NFS.  
 La sauvegarde est ici gérée par PVE. Aucun PBS n'intervient ici.
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 # Exemple
 
 Logs du job de backup
