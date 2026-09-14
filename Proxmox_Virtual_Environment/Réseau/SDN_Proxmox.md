@@ -2,6 +2,9 @@
 L'objectif ici va être de décortiquer le SDN proposé par Proxmox.
 Nous allons tout d'abord essayer d’appréhender le principe théorique de chacun de ses composants puis nous verrons son utilisation concrète afin de comprendre l'interface pas toujours très intuitive de PVE
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ---
 
 # La théorie
