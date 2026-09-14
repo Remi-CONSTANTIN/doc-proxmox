@@ -2,6 +2,9 @@
 Cette documentation n'est pas un tutoriel, et ne contient donc que très peu de tehnique.
 La haute disponibilité d'un serveur sur proxmox se décompose en deux grande parties : 
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 ---
 
 ### 1 - Stockage
