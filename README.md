@@ -30,14 +30,13 @@ Ce dépôt peut contenir, selon les sections, des documents sur :
 
 ### Proxmox VE
 - installation de l’hyperviseur
-- création et gestion de VM
-- gestion des containers LXC
+- création et gestion de VM/LXC
 - réseau, stockage, snapshots, templates
 - cluster, haute disponibilité, réplication
 
 ### Proxmox Backup Server
 - installation et configuration initiale
-- sauvegardes de VM / containers
+- sauvegardes de VM/LXC
 - politique de rétention
 - restauration de données
 - intégration avec Proxmox VE
