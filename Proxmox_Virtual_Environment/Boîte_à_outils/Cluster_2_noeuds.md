@@ -6,6 +6,9 @@ Donc si tu n’as que **2 nœuds**, il faut 2 votes pour avoir un quorum → si 
 > - Mettre le quorum à 1 (forcer le cluster à continuer même seul) enlève la protection contre les **split-brain** (les deux nœuds qui pensent être maître en même temps)
 > - C’est acceptable **seulement dans un lab ou un cluster à 2 nœuds max**, pas en production
 
+> [!note]
+> Documentation réalisée sur PVE 9
+
 # Procédure
 
 ### Méthode pour mettre le quorum à 1
